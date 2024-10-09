@@ -67,7 +67,7 @@ export default function SignIn() {
           </button>
           <p className="mt-4 text-center text-xs text-slate-400">
             Check if your school is approved{' '}
-            <Link href="/approved-schools" className="text-red-500 hover:text-red-400">
+            <Link href="/schools" className="text-red-500 hover:text-red-400">
               here
             </Link>
             .

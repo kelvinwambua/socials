@@ -151,7 +151,7 @@ const LandingHero: React.FC<HeroProps> = ({ title, subtitle, buttonText }) => {
             </p>
             <div className="mt-8">
               <LandingButton
-                href={'/login'}
+                href={'/api/auth/signin'}
                 className="flex gap-1 items-center justify-center"
                 rel="noopener"
                 size="lg"

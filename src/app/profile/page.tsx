@@ -9,10 +9,9 @@ import { Button } from "../../components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../components/ui/select"
 import { Badge } from "../../components/ui/badge"
 import { api } from '~/trpc/react'
-import { useToast } from '../../hooks/use-toast'  // Import useToast for notifications
-import { z } from 'zod' // Import Zod for validation
+import { useToast } from '../../hooks/use-toast'  
+import { z } from 'zod' 
 
-// Zod schema for form validation
 const profileSetupSchema = z.object({
   displayName: z.string().min(1, "Display Name is required"),
   bio: z.string().optional(),
@@ -44,7 +43,7 @@ export default function ProfileSetup() {
     interests: [] as string[],
   })
   const [isLoading, setIsLoading] = useState(false)
-  const [formErrors, setFormErrors] = useState<Record<string, string | undefined>>({}) // For tracking validation errors
+  const [formErrors, setFormErrors] = useState<Record<string, string | undefined>>({})
 
   const mutation = api.profile.setup.useMutation()
 
@@ -67,11 +66,11 @@ export default function ProfileSetup() {
     setIsLoading(true)
     setFormErrors({})
 
-    // Validate form data using Zod schema
+  
     const result = profileSetupSchema.safeParse(formData)
 
     if (!result.success) {
-      // Extract validation errors from Zod result and set them in state
+   
       const errors = result.error.flatten().fieldErrors
       setFormErrors({
         displayName: errors.displayName?.[0],

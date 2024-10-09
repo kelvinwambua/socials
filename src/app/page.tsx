@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { usePathname } from 'next/navigation'
+
 import Link from 'next/link'
 import Image from 'next/image'
 import { ArrowRightOutlined, CloseOutlined, MenuOutlined, LinkedinFilled, TwitterCircleFilled } from '@ant-design/icons'
@@ -137,7 +137,7 @@ interface HeroProps {
   pictureUrl: string;
 }
 
-const LandingHero: React.FC<HeroProps> = ({ title, subtitle, buttonText, pictureUrl }) => {
+const LandingHero: React.FC<HeroProps> = ({ title, subtitle, buttonText }) => {
   return (
     <section className="py-20 lg:py-32 overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">

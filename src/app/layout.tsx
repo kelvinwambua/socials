@@ -1,9 +1,13 @@
+
 import "~/styles/globals.css";
 
 import { GeistSans } from "geist/font/sans";
 import { type Metadata } from "next";
 
 import { TRPCReactProvider } from "~/trpc/react";
+import { Providers } from "./providers";
+
+import { Toaster } from "~/components/ui/toaster";
 
 export const metadata: Metadata = {
   title: "Sonder",
@@ -17,7 +21,14 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${GeistSans.variable}`}>
       <body>
-        <TRPCReactProvider>{children}</TRPCReactProvider>
+        <TRPCReactProvider>
+        <Providers>
+   
+          {children}
+          <Toaster/>
+          
+        </Providers>
+          </TRPCReactProvider>
       </body>
     </html>
   );

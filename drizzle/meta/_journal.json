@@ -8,6 +8,27 @@
       "when": 1728463454215,
       "tag": "0000_bright_harpoon",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1728489888712,
+      "tag": "0001_nervous_omega_flight",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1728491704010,
+      "tag": "0002_hard_oracle",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1728496898508,
+      "tag": "0003_damp_silver_centurion",
+      "breakpoints": true
     }
   ]
 }

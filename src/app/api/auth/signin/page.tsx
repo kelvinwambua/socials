@@ -1,8 +1,8 @@
 'use client'
-
 import React, { useState } from 'react'
 import { signIn } from 'next-auth/react'
 import { GoogleOutlined } from '@ant-design/icons'
+import Link from 'next/link'
 
 const Logo: React.FC<{ height?: number }> = ({ height = 40 }) => (
   <div style={{ height }}>
@@ -16,7 +16,7 @@ export default function SignIn() {
   const handleSignIn = async () => {
     setIsLoading(true)
     try {
-      const result = await signIn('google', { callbackUrl: '/' })
+      const result = await signIn('google', { callbackUrl: '/profile' })
       if (result?.error) {
         console.error('Sign-in error:', result.error)
       }
@@ -40,9 +40,11 @@ export default function SignIn() {
           Connect with your campus community
         </p>
       </div>
-
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-gray-900 py-8 px-4 shadow sm:rounded-lg sm:px-10">
+          <p className="text-center text-sm text-slate-400 mb-4">
+            Please use your school Google account to sign in.
+          </p>
           <button
             onClick={handleSignIn}
             disabled={isLoading}
@@ -63,6 +65,13 @@ export default function SignIn() {
               </>
             )}
           </button>
+          <p className="mt-4 text-center text-xs text-slate-400">
+            Check if your school is approved{' '}
+            <Link href="/approved-schools" className="text-red-500 hover:text-red-400">
+              here
+            </Link>
+            .
+          </p>
         </div>
       </div>
     </div>

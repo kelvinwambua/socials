@@ -128,3 +128,34 @@ export const verificationTokens = createTable(
     compoundKey: primaryKey({ columns: [vt.identifier, vt.token] }),
   })
 );
+export const profiles = createTable('profiles', {
+  id: serial('id').primaryKey(),
+  userId: varchar('user_id').notNull().unique(),
+  displayName: varchar('display_name').notNull(),
+  bio: text('bio'),
+  university: varchar('university').notNull(),
+  major: varchar('major').notNull(),
+  graduationYear: integer('graduation_year').notNull(),
+  interests: text('interests').array(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+export const approvedSchools = createTable('approved_schools', {
+  id: text('id').primaryKey(),
+  name: varchar('name', { length: 100 }).notNull(),
+  domain: varchar('domain', { length: 100 }).notNull().unique(),
+})
+export const schoolApplications = createTable('school_applications', {
+  id: serial('id').primaryKey(),
+  schoolName: varchar('school_name', { length: 255 }).notNull(),
+  domain: varchar('domain', { length: 255 }).notNull(),
+  contactEmail: varchar('contact_email', { length: 255 }).notNull(),
+  additionalInfo: text('additional_info'),
+  status: varchar('status', { length: 20 }).notNull().default('PENDING'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+
+

@@ -39,11 +39,12 @@ export default function Component() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-black px-4">
       <div className="w-full max-w-sm space-y-8">
+        {/* Logo and Header */}
         <div className="flex flex-col items-center space-y-4">
           <Logo height={50} />
           <div className="space-y-1 text-center">
             <h1 className="text-xl font-semibold tracking-tight text-white">
-              Welcome
+              Welcome back
             </h1>
             <p className="text-sm text-slate-400">
               Sign in to continue to Sonder
@@ -51,6 +52,7 @@ export default function Component() {
           </div>
         </div>
 
+        {/* Sign In Card */}
         <div className="rounded-xl border border-slate-800 bg-slate-900/50 p-6">
           <div className="space-y-4">
             <div className="text-center">
@@ -89,7 +91,9 @@ export default function Component() {
               <div className="absolute inset-0 flex items-center">
                 <span className="w-full border-t border-slate-800" />
               </div>
-            
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-slate-900 px-2 text-slate-500">Or</span>
+              </div>
             </div>
 
             <div className="text-center">
@@ -108,6 +112,7 @@ export default function Component() {
           </div>
         </div>
 
+        {/* Footer */}
         <p className="text-center text-xs text-slate-500">
           By signing in, you agree to our{' '}
           <Link href="/terms" className="hover:text-red-500 hover:underline">

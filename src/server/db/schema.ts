@@ -156,6 +156,21 @@ export const schoolApplications = createTable('school_applications', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
+export const friendRequests = createTable('friend_requests', {
+  id: serial('id').primaryKey(),
+  senderId: varchar('sender_id',{length:255}).references(() => users.id).notNull(),
+  receiverId: varchar('receiver_id',{length:255}).references(() => users.id).notNull(),
+  status: text('status').notNull().default('pending'), 
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+export const swipes = createTable('swipes', {
+  id: serial('id').primaryKey(),
+  swiperId: varchar('swiper_id',{length: 255}).references(() => users.id).notNull(),
+  swipedId: varchar('swiped_id',{length: 255}).references(() => users.id).notNull(),
+  direction: text('direction').notNull(), 
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
 
 
 

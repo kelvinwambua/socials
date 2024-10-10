@@ -1,6 +1,6 @@
-import { eq, sql } from "drizzle-orm";
+import { and, eq, inArray, not, or, sql } from "drizzle-orm";
 import { createTRPCRouter, protectedProcedure, publicProcedure } from '../trpc';
-import { profiles, approvedSchools, schoolApplications } from '~/server/db/schema';
+import { profiles, approvedSchools, schoolApplications, friendRequests, swipes, users } from '~/server/db/schema';
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import { Filter } from 'bad-words';  
@@ -131,4 +131,125 @@ export const profileRouter = createTRPCRouter({
 
       return { success: true };
     }),
+
+    getNextUser: protectedProcedure.query(async ({ ctx }) => {
+      const currentUserId = ctx.session.user.id;
+      
+      const swipedUsers = ctx.db
+        .select({ id: swipes.swipedId })
+        .from(swipes)
+        .where(eq(swipes.swiperId, currentUserId));
+    
+      const potentialMatch = await ctx.db.query.users.findFirst({
+        where: and(
+          not(eq(users.id, currentUserId)),
+          not(inArray(users.id, swipedUsers))
+        ),
+      });
+    
+      if (!potentialMatch) {
+        return { status: 'NO_MORE_USERS' as const };
+      }
+    
+      const profile = await ctx.db.query.profiles.findFirst({
+        where: eq(profiles.userId, potentialMatch.id),
+      });
+    
+      return { status: 'SUCCESS' as const, user: { ...potentialMatch, profile } };
+    }),
+  
+    swipe: protectedProcedure
+      .input(z.object({
+        swipedId: z.string(),
+        direction: z.enum(['left', 'right']),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { swipedId, direction } = input;
+        const swiperId = ctx.session.user.id;
+  
+        await ctx.db.insert(swipes).values({
+          swiperId,
+          swipedId,
+          direction,
+        });
+  
+        if (direction === 'right') {
+          const matchingSwipe = await ctx.db.query.swipes.findFirst({
+            where: and(
+              eq(swipes.swiperId, swipedId),
+              eq(swipes.swipedId, swiperId),
+              eq(swipes.direction, 'right')
+            ),
+          });
+  
+          if (matchingSwipe) {
+            await ctx.db.insert(friendRequests).values([
+              {
+                senderId: swiperId,
+                receiverId: swipedId,
+                status: 'accepted',
+              },
+              {
+                senderId: swipedId,
+                receiverId: swiperId,
+                status: 'accepted',
+              },
+            ]);
+  
+            return { status: 'MATCH' as const, matchedUserId: swipedId };
+          }
+        }
+  
+        return { status: 'NO_MATCH' as const };
+      }),
+  
+
+      getFriends: protectedProcedure.query(async ({ ctx }) => {
+        const userId = ctx.session.user.id;
+    
+        const friendRequestsQuery = ctx.db
+          .select()
+          .from(friendRequests)
+          .where(
+            and(
+              eq(friendRequests.status, 'accepted'),
+              or(
+                eq(friendRequests.senderId, userId),
+                eq(friendRequests.receiverId, userId)
+              )
+            )
+          );
+    
+        const friendRequestsResult = await friendRequestsQuery;
+    
+        const friendIds = friendRequestsResult.map(request => 
+          request.senderId === userId ? request.receiverId : request.senderId
+        );
+    
+        const friends = await ctx.db.query.users.findMany({
+          where: inArray(users.id, friendIds),
+          columns: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        });
+    
+        const friendProfiles = await ctx.db.query.profiles.findMany({
+          where: inArray(profiles.userId, friendIds),
+          columns: {
+            userId: true,
+            bio: true,
+            major: true,
+            graduationYear: true,
+          },
+        });
+    
+        const friendsWithProfiles = friends.map(friend => ({
+          ...friend,
+          profile: friendProfiles.find(profile => profile.userId === friend.id) ?? null,
+        }));
+    
+        return friendsWithProfiles;
+      }),
 });

@@ -29,6 +29,13 @@
       "when": 1728496898508,
       "tag": "0003_damp_silver_centurion",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1728546896911,
+      "tag": "0004_short_diamondback",
+      "breakpoints": true
     }
   ]
 }

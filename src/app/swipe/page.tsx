@@ -1,129 +1,101 @@
 'use client'
 
-import React, { useState } from 'react'
-import { signIn } from 'next-auth/react'
-import {  Loader2 } from 'lucide-react'
-import Link from 'next/link'
-import { cn } from '~/lib/utils'
-import { GoogleOutlined } from '@ant-design/icons'
+import { useState } from 'react'
+import SwipeCard from './SwipeCard'
+import { api } from '~/trpc/react'
+import { useToast } from "../../hooks/use-toast"
+import { Button } from "../../components/ui/button"
 
-interface LogoProps {
-  height?: number
+interface User {
+  id: string;
+  profile?: {
+    displayName: string;
+    bio: string | null;
+    university: string;
+    major: string;
+    graduationYear: number;
+    interests: string[] | null;
+    imageUrl: string;
+  };
 }
 
-const Logo: React.FC<LogoProps> = ({ height = 40 }) => (
-  <div style={{ height }} className="flex items-center">
-    <span className="text-3xl font-bold text-red-600">
-      Sonder
-    </span>
-  </div>
-)
+function SwipeInterface() {
+  const { toast } = useToast()
+  const [currentUser, setCurrentUser] = useState<User | null>(null)
 
-export default function Component() {
-  const [isLoading, setIsLoading] = useState<boolean>(false)
+  const { data: nextUserData, refetch: refetchNextUser } = api.profile.getNextUser.useQuery()
 
-  const handleSignIn = async (): Promise<void> => {
-    setIsLoading(true)
-    try {
-      const result = await signIn('google', { callbackUrl: '/profile' })
-      if (result?.error) {
-        console.error('Sign-in error:', result.error)
-      }
-    } catch (error) {
-      console.error('Sign-in error:', error)
-    } finally {
-      setIsLoading(false)
+  const handleNextUser = () => {
+    if (nextUserData?.status === 'SUCCESS' && nextUserData.user) {
+      setCurrentUser(nextUserData.user as User)
+    } else if (nextUserData?.status === 'NO_MORE_USERS') {
+      toast({
+        title: "No more users",
+        description: "You've swiped through all available users.",
+        variant: "default",
+      })
     }
   }
 
-  return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-black px-4">
-      <div className="w-full max-w-sm space-y-8">
-        {/* Logo and Header */}
-        <div className="flex flex-col items-center space-y-4">
-          <Logo height={50} />
-          <div className="space-y-1 text-center">
-            <h1 className="text-xl font-semibold tracking-tight text-white">
-              Welcome back
-            </h1>
-            <p className="text-sm text-slate-400">
-              Sign in to continue to Sonder
-            </p>
-          </div>
-        </div>
+  const swipeMutation = api.profile.swipe.useMutation({
+    onSuccess: (data) => {
+      if (data.status === 'MATCH') {
+        toast({
+          title: "It's a match!",
+          description: "You've matched with this user.",
+          variant: "default",
+        })
+      }
+      void refetchNextUser()
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to process swipe. Please try again.",
+        variant: "destructive",
+      })
+    },
+  })
 
-        {/* Sign In Card */}
-        <div className="rounded-xl border border-slate-800 bg-slate-900/50 p-6">
-          <div className="space-y-4">
-            <div className="text-center">
-              <p className="text-xs text-slate-400">
-                Please sign in with your university email
-              </p>
-            </div>
+  const handleSwipe = (direction: 'left' | 'right') => {
+    if (currentUser) {
+      swipeMutation.mutate({
+        swipedId: currentUser.id,
+        direction: direction,
+      })
+    }
+  }
 
-            <button
-              onClick={handleSignIn}
-              disabled={isLoading}
-              className={cn(
-                "relative w-full rounded-lg px-4 py-3",
-                "flex items-center justify-center space-x-3",
-                "text-sm font-medium text-white",
-                "transition-all duration-150",
-                "bg-red-600 hover:bg-red-700",
-                "focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-black",
-                "disabled:cursor-not-allowed disabled:opacity-50"
-              )}
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  <span>Signing in...</span>
-                </>
-              ) : (
-                <>
-                  <GoogleOutlined className="h-4 w-4" />
-                  <span>Sign in with Google</span>
-                </>
-              )}
-            </button>
-
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-slate-800" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-slate-900 px-2 text-slate-500">Or</span>
-              </div>
-            </div>
-
-            <div className="text-center">
-              <Link 
-                href="/schools"
-                className={cn(
-                  "inline-flex items-center space-x-1 text-xs text-slate-400",
-                  "transition-colors duration-150",
-                  "hover:text-red-500"
-                )}
-              >
-                <span>Check if your school is supported</span>
-                <span aria-hidden="true">→</span>
-              </Link>
-            </div>
-          </div>
-        </div>
-
-        {/* Footer */}
-        <p className="text-center text-xs text-slate-500">
-          By signing in, you agree to our{' '}
-          <Link href="/terms" className="hover:text-red-500 hover:underline">
-            Terms of Service
-          </Link>
-          {' '}and{' '}
-          <Link href="/privacy" className="hover:text-red-500 hover:underline">
-            Privacy Policy
-          </Link>
-        </p>
+  if (!currentUser) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <Button 
+          onClick={handleNextUser} 
+          className="bg-red-600 text-white hover:bg-red-700"
+        >
+          Start Swiping
+        </Button>
       </div>
+    )
+  }
+
+  return (
+    <div className="flex justify-center items-center h-screen bg-gray-900">
+      <SwipeCard
+        user={{
+          id: currentUser.id,
+          displayName: currentUser.profile?.displayName ?? '',
+          bio: currentUser.profile?.bio ?? '',
+          university: currentUser.profile?.university ?? '',
+          major: currentUser.profile?.major ?? '',
+          graduationYear: currentUser.profile?.graduationYear ?? 0,
+          interests: currentUser.profile?.interests ?? [],
+          imageUrl: currentUser.profile?.imageUrl ?? '/default-profile.jpg',
+        }}
+        onSwipe={handleSwipe}
+      />
     </div>
   )
 }
+
+export default SwipeInterface

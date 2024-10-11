@@ -1,4 +1,4 @@
-import { relations, sql } from "drizzle-orm";
+import { InferSelectModel, relations, sql } from "drizzle-orm";
 import {
   index,
   integer,
@@ -18,6 +18,63 @@ import { type AdapterAccount } from "next-auth/adapters";
  * @see https://orm.drizzle.team/docs/goodies#multi-project-schema
  */
 export const createTable = pgTableCreator((name) => `socials_${name}`);
+export type Message = InferSelectModel<typeof messages>;
+export type Conversation = InferSelectModel<typeof conversations>;
+export type ConversationParticipant = InferSelectModel<typeof conversationParticipants>;
+export type User = InferSelectModel<typeof users>;
+
+// Extended types with relationships
+export type MessageWithSenderImage = Message & {
+  senderImage: string | null;
+};
+export interface MessageWithSender extends MessageWithSenderImage {
+  sender?: {
+    id: string;
+    name?: string | null;
+    image?: string | null;
+  };
+}
+
+export interface ConversationWithParticipants extends Conversation {
+  participants: ConversationParticipant[];
+  lastMessage?: Message;
+}
+
+// Socket event types
+export type MessageStatus = 'sent' | 'delivered' | 'read';
+
+export interface MessageEvent {
+  type: 'send' | 'receive' | 'status';
+  message: Message;
+  conversationId: number;
+  status?: MessageStatus;
+}
+
+// API response types
+export interface MessagesResponse {
+  messages: MessageWithSenderImage[];
+  nextCursor?: number;
+}
+
+export interface ConversationResponse {
+  conversation: ConversationWithParticipants;
+  unreadCount?: number;
+}
+
+// Socket event types for type safety
+export interface ServerToClientEvents {
+  'receive-message': (event: MessageEvent) => void;
+  'message-status': (messageId: number, status: MessageStatus) => void;
+  'typing-status': (conversationId: number, userId: string, isTyping: boolean) => void;
+}
+
+export interface ClientToServerEvents {
+  'join-room': (roomId: string) => void;
+  'leave-room': (roomId: string) => void;
+  'send-message': (event: MessageEvent) => void;
+  'mark-as-read': (messageId: number) => void;
+  'typing': (conversationId: number, isTyping: boolean) => void;
+}
 
 export const posts = createTable(
   "post",

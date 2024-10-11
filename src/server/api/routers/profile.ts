@@ -232,6 +232,7 @@ export const profileRouter = createTRPCRouter({
             id: true,
             name: true,
             email: true,
+            image: true,
           },
         });
     

@@ -1,76 +1,95 @@
-'use client'
+"use client"
 
-import { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { api } from '~/trpc/react'
 import { useSession } from 'next-auth/react'
 import { Loader2, Send } from 'lucide-react'
 import { pusherClient } from '~/lib/pusher'
-import type { Message } from '../../../server/db/schema'
+import type { MessageWithSenderImage, Message } from '~/server/db/schema'
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar"
 import { cn } from "~/lib/utils"
 import { useToast } from '~/hooks/use-toast'
+import { ChatSidebar } from '../../_components/ChatSideBar'
+import { Button } from '~/components/ui/button'
+import { Input } from '~/components/ui/input'
+import { StartConversationDialog } from '../../_components/StartConversation'
 
-function ErrorBoundary({ children }: { children: React.ReactNode }) {
-  const [hasError, setHasError] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
-
-  useEffect(() => {
-    if (hasError) {
-      console.error('Error in ChatPage:', error);
-    }
-  }, [hasError, error]);
-
-  if (hasError) {
-    return (
-      <div className="flex h-full items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-lg font-semibold text-gray-900">Something went wrong</h2>
-          <p className="mt-2 text-sm text-gray-500">
-            {error?.message ?? 'Please try again later'}
-          </p>
-        </div>
-      </div>
-    );
-  }
-
+function ErrorMessage({ message }: { message: string }) {
   return (
-    <div onError={(error) => {
-      setHasError(true);
-      setError(error instanceof Error ? error : new Error('Unknown error'));
-    }}>
-      {children}
+    <div className="bg-red-900 border border-red-700 text-red-100 px-4 py-3 rounded relative" role="alert">
+      <strong className="font-bold">Error: </strong>
+      <span className="block sm:inline">{message}</span>
     </div>
-  );
+  )
+}
+
+function MessageBubble({ message, isOwnMessage }: { message: MessageWithSenderImage, isOwnMessage: boolean }) {
+  return (
+    <div className={cn(
+      "flex items-end gap-2 mb-4",
+      isOwnMessage ? "justify-end" : "justify-start"
+    )}>
+      {!isOwnMessage && (
+        <Avatar className="h-8 w-8">
+          <AvatarImage src={message.senderImage?? "/placeholder.svg?height=32&width=32"} />
+          <AvatarFallback className="bg-slate-700 text-white">
+            {message.senderId?.charAt(0) ?? 'U'}
+          </AvatarFallback>
+        </Avatar>
+      )}
+
+      <div className={cn(
+        "max-w-[70%] rounded-lg p-3",
+        isOwnMessage
+          ? "bg-red-600 text-white rounded-br-none"
+          : "bg-slate-800 text-white rounded-bl-none"
+      )}>
+        <p className="break-words">{message.content}</p>
+        <span className={cn(
+          "text-xs mt-1 block text-right",
+          isOwnMessage ? "text-red-200" : "text-slate-400"
+        )}>
+          {new Date(message.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+        </span>
+      </div>
+
+    </div>
+  )
 }
 
 export default function ChatPage({ params }: { params: { conversationId: string } }) {
   const { toast } = useToast()
-  const { data: session, status: sessionStatus } = useSession()
+  const { data: session } = useSession()
   const [message, setMessage] = useState('')
-  const [isTyping, setIsTyping] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const conversationId = parseInt(params.conversationId)
-
-  console.log('Rendering ChatPage. Conversation ID:', conversationId);
+  const { data: conversationData } = api.chat.getConversation.useQuery(
+    { conversationId },
+    { enabled: !!conversationId }
+  );
 
   const { data: messages, isLoading, isError, error, refetch } = api.chat.getMessages.useQuery({
     conversationId,
     limit: 50,
   }, {
     retry: 3,
+    refetchInterval: false,
+    refetchOnWindowFocus: false
   })
 
   const sendMessage = api.chat.sendMessage.useMutation({
-    onSuccess: (newMessage: Message) => {
-      console.log('Message sent successfully:', newMessage);
+    onSuccess: () => {
       setMessage('')
       void refetch()
     },
-    onError: (error) => console.error('Error sending message:', error),
-  })
-
-  const setTypingStatus = api.chat.setTypingStatus.useMutation({
-    onError: (error) => console.error('Error setting typing status:', error),
+    onError: (error) => {
+      console.error('Error sending message:', error)
+      toast({
+        title: "Error",
+        description: "Failed to send message. Please try again.",
+        variant: "destructive"
+      })
+    },
   })
 
   const scrollToBottom = () => {
@@ -78,174 +97,98 @@ export default function ChatPage({ params }: { params: { conversationId: string 
   }
 
   useEffect(() => {
-    console.log('Component mounted. Session status:', sessionStatus);
-    console.log('Messages:', messages);
-  }, [sessionStatus, messages])
-
-  useEffect(() => {
     scrollToBottom()
-  }, [messages])
+  }, [messages?.length])
 
   useEffect(() => {
     const channel = pusherClient.subscribe(`chat-${conversationId}`);
 
-    channel.bind('pusher:subscription_succeeded', () => {
-      console.log('Successfully subscribed to Pusher channel');
-    });
-
-    channel.bind('pusher:subscription_error', (error: string) => {
-      console.error('Pusher subscription error:', error);
-    });
-
     channel.bind('new-message', (newMessage: Message) => {
-      console.log('New message received:', newMessage);
-      void refetch()
+      if (newMessage.senderId !== session?.user?.id) {
+        void refetch()
+      }
     });
 
     return () => {
-      console.log('Unsubscribing from Pusher channel');
       pusherClient.unsubscribe(`chat-${conversationId}`);
     };
-  }, [conversationId, refetch]);
+  }, [conversationId, refetch, session?.user?.id]);
 
-  // useEffect(() => {
-  //   const typingChannel = pusherClient.subscribe(`chat-${conversationId}-typing`);
-
-  //   typingChannel.bind('typing-status', (data: { userId: string, isTyping: boolean }) => {
-  //     if (data.userId !== session?.user?.id) {
-  //       setIsTyping(data.isTyping);
-  //     }
-  //   });
-
-  //   return () => {
-  //     pusherClient.unsubscribe(`chat-${conversationId}-typing`);
-  //   };
-  // }, [conversationId, session?.user?.id]);
-
-  // useEffect(() => {
-  //   let typingTimeout: NodeJS.Timeout
-
-  //   if (message) {
-  //     setTypingStatus.mutate({ conversationId, isTyping: true });
-
-  //     typingTimeout = setTimeout(() => {
-  //       setTypingStatus.mutate({ conversationId, isTyping: false });
-  //     }, 2000);
-  //   }
-
-  //   return () => {
-  //     if (typingTimeout) {
-  //       clearTimeout(typingTimeout);
-  //     }
-  //     setTypingStatus.mutate({ conversationId, isTyping: false });
-  //   };
-  // }, [message, conversationId, setTypingStatus]);
-
-  const formatTime = (date: Date) => {
-    return new Intl.DateTimeFormat('en-US', {
-      hour: 'numeric',
-      minute: 'numeric',
-      hour12: true,
-    }).format(date)
-  }
-
-  if (sessionStatus === 'loading' || isLoading) {
+  if (isLoading) {
     return (
-      <div className="flex h-full items-center justify-center">
-        <Loader2 className="h-6 w-6 animate-spin" />
-      </div>
-    )
-  }
-
-  if (sessionStatus === 'unauthenticated') {
-    return (
-      <div className="flex h-full items-center justify-center">
-        <p>Please sign in to view this chat.</p>
+      <div className="flex h-screen bg-black">
+        <ChatSidebar />
+        <div className="flex-1 flex items-center justify-center">
+          <Loader2 className="h-6 w-6 animate-spin text-red-600" />
+        </div>
       </div>
     )
   }
 
   if (isError) {
     return (
-      <div className="flex h-full items-center justify-center">
-        <p>Error: {error.message}</p>
+      <div className="flex h-screen bg-black">
+        <ChatSidebar />
+        <div className="flex-1 flex items-center justify-center">
+          <ErrorMessage message={error.message} />
+        </div>
       </div>
     )
   }
 
   return (
-    <ErrorBoundary>
-      <div className="flex h-full flex-col">
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+    <div className="flex h-screen bg-black">
+      <ChatSidebar />
+      <div className="flex-1 flex flex-col">
+        <div className="bg-slate-900 border-b border-slate-800 px-4 py-2 flex items-center justify-between">
+          {conversationId ? (
+            <>
+              {conversationData ? (
+                <div className="flex items-center">
+                  <Avatar className="h-8 w-8 mr-2">
+                    <AvatarImage src={conversationData.user.image ?? "/placeholder.svg?height=32&width=32"} />
+                    <AvatarFallback className="bg-slate-700 text-white">
+                      {conversationData.user.name?.[0] ?? 'U'}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="text-lg font-semibold text-white">{conversationData.user.name}</span>
+                </div>
+              ) : (
+                <div className="flex items-center">
+                  <Loader2 className="h-5 w-5 animate-spin mr-2 text-slate-400" />
+                  <span className="text-lg font-semibold text-slate-400">Loading...</span>
+                </div>
+              )}
+            </>
+          ) : (
+            <h1 className="text-lg font-semibold text-white">Chats</h1>
+          )}
+          <div className="flex items-center">
+            <Avatar className="h-8 w-8 mr-2">
+              <AvatarImage src={session?.user?.image ?? "/placeholder.svg?height=32&width=32"} />
+              <AvatarFallback className="bg-slate-700 text-white">
+                {session?.user?.name?.[0] ?? 'U'}
+              </AvatarFallback>
+            </Avatar>
+            <StartConversationDialog />
+          </div>
+        </div>
+        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-black">
           {messages && messages.length > 0 ? (
             messages.map((msg) => (
-              <div
+              <MessageBubble
                 key={msg.id}
-                className={cn(
-                  "flex items-start gap-2 max-w-[80%]",
-                  msg.senderId === session?.user?.id ? "ml-auto" : "mr-auto"
-                )}
-              >
-                {msg.senderId !== session?.user?.id && (
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={msg.senderId ?? "./avatar.png"} />
-                    <AvatarFallback>
-                      {msg.senderId?.charAt(0) ?? 'U'}
-                    </AvatarFallback>
-                  </Avatar>
-                )}
-
-                <div
-                  className={cn(
-                    "flex flex-col rounded-lg p-3",
-                    msg.senderId === session?.user?.id
-                      ? "bg-blue-500 text-white"
-                      : "bg-gray-200 text-gray-900"
-                  )}
-                >
-                  <p className="break-words">{msg.content}</p>
-                  <span
-                    className={cn(
-                      "text-xs mt-1",
-                      msg.senderId === session?.user?.id
-                        ? "text-blue-100"
-                        : "text-gray-500"
-                    )}
-                  >
-                    {formatTime(new Date(msg.createdAt))}
-                  </span>
-                </div>
-
-                {msg.senderId === session?.user?.id && (
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={session.user.image ?? undefined} />
-                    <AvatarFallback>
-                      {session.user.name?.charAt(0) ?? 'U'}
-                    </AvatarFallback>
-                  </Avatar>
-                )}
-              </div>
+                message={msg}
+                isOwnMessage={msg.senderId === session?.user?.id}
+              />
             ))
           ) : (
             <div className="flex h-full items-center justify-center">
-              <p>No messages yet. Start a conversation!</p>
+              <p className="text-slate-400">No messages yet. Start a conversation!</p>
             </div>
           )}
-
-          {isTyping && (
-            <div className="flex items-center gap-2 text-gray-500">
-              <div className="flex space-x-1">
-                <div className="h-2 w-2 animate-bounce rounded-full bg-gray-400" />
-                <div className="h-2 w-2 animate-bounce rounded-full bg-gray-400 [animation-delay:0.2s]" />
-                <div className="h-2 w-2 animate-bounce rounded-full bg-gray-400 [animation-delay:0.4s]" />
-              </div>
-              <span className="text-sm">Someone is typing...</span>
-            </div>
-          )}
-
           <div ref={messagesEndRef} />
         </div>
-
         <form
           onSubmit={(e) => {
             e.preventDefault()
@@ -256,31 +199,31 @@ export default function ChatPage({ params }: { params: { conversationId: string 
               })
             }
           }}
-          className="border-t border-gray-200 p-4"
+          className="border-t border-slate-800 p-4 bg-slate-900"
         >
           <div className="flex items-center gap-2">
-            <input
+            <Input
               type="text"
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              className="flex-1 rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="flex-1 bg-slate-800 border-slate-700 text-white placeholder-slate-400"
               placeholder="Type a message..."
               disabled={sendMessage.isPending}
             />
-            <button
+            <Button
               type="submit"
               disabled={sendMessage.isPending || !message.trim()}
-              className="rounded-lg bg-blue-500 p-2 text-white transition-colors hover:bg-blue-600 disabled:opacity-50"
+              className="bg-red-600 hover:bg-red-700 text-white"
             >
               {sendMessage.isPending ? (
                 <Loader2 className="h-5 w-5 animate-spin" />
               ) : (
                 <Send className="h-5 w-5" />
               )}
-            </button>
+            </Button>
           </div>
         </form>
       </div>
-    </ErrorBoundary>
+    </div>
   )
 }

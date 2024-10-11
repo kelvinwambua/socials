@@ -26,7 +26,7 @@ interface SwipeCardProps {
 
 export default function SwipeCard({ user, onSwipe }: SwipeCardProps) {
   const [exitX, setExitX] = useState<number>(0)
-  const [isFlipped, setIsFlipped] = useState(true)
+  const [isFlipped, setIsFlipped] = useState(false)
   const [imageError, setImageError] = useState(false)
   const [imageUrl, setImageUrl] = useState(user.image)
   const controls = useAnimation()

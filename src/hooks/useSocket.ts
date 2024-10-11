@@ -1,8 +1,13 @@
+// hooks/useSocket.ts
 import { useEffect, useRef } from 'react';
 import io, { Socket } from 'socket.io-client';
+import type { 
+  ServerToClientEvents, 
+  ClientToServerEvents 
+} from '../server/db/schema';
 
 export const useSocket = (roomId: string) => {
-  const socketRef = useRef<Socket | null>(null);
+  const socketRef = useRef<Socket<ServerToClientEvents, ClientToServerEvents> | null>(null);
 
   useEffect(() => {
     const socket = io({
@@ -15,7 +20,10 @@ export const useSocket = (roomId: string) => {
     socket.emit("join-room", roomId);
 
     return () => {
-      socket.disconnect();
+      if (socket) {
+        socket.emit("leave-room", roomId);
+        socket.disconnect();
+      }
     };
   }, [roomId]);
 

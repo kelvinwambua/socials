@@ -1,30 +1,23 @@
-import { useEffect, useState } from 'react'
-import io, { Socket } from 'socket.io-client'
+import { useEffect, useRef } from 'react';
+import io, { Socket } from 'socket.io-client';
 
-export const useSocket = (conversationId: string) => {
-  const [socket, setSocket] = useState<Socket | null>(null)
+export const useSocket = (roomId: string) => {
+  const socketRef = useRef<Socket | null>(null);
 
   useEffect(() => {
-    const socketInitializer = async () => {
-      await fetch('/api/socket')
-      const newSocket = io()
+    const socket = io({
+      path: "/api/socket",
+      addTrailingSlash: false,
+    });
 
-      newSocket.on('connect', () => {
-        console.log('Connected to socket')
-        newSocket.emit('join-conversation', conversationId)
-      })
+    socketRef.current = socket;
 
-      setSocket(newSocket)
-    }
-
-    void socketInitializer()
+    socket.emit("join-room", roomId);
 
     return () => {
-      if (socket) {
-        socket.disconnect()
-      }
-    }
-  }, [conversationId])
+      socket.disconnect();
+    };
+  }, [roomId]);
 
-  return socket
-}
+  return socketRef.current;
+};

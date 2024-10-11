@@ -1,10 +1,10 @@
-
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { messages, conversations, conversationParticipants } from "~/server/db/schema";
 import { eq, and, desc, lt, asc } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import type { InferSelectModel } from "drizzle-orm";
+import { pusherServer } from '~/server/pusher';
 
 type MessageType = InferSelectModel<typeof messages>;
 
@@ -38,7 +38,6 @@ export const chatRouter = createTRPCRouter({
       cursor: z.number().optional(),
     }))
     .query(async ({ ctx, input }) => {
-
       const participant = await ctx.db.query.conversationParticipants.findFirst({
         where: and(
           eq(conversationParticipants.conversationId, input.conversationId),
@@ -54,20 +53,20 @@ export const chatRouter = createTRPCRouter({
       }
 
       const messagesList = await ctx.db
-  .select()
-  .from(messages)
-  .where(
-    input.cursor
-      ? and(
-          eq(messages.conversationId, input.conversationId),
-          lt(messages.id, input.cursor)
+        .select()
+        .from(messages)
+        .where(
+          input.cursor
+            ? and(
+                eq(messages.conversationId, input.conversationId),
+                lt(messages.id, input.cursor)
+              )
+            : eq(messages.conversationId, input.conversationId)
         )
-      : eq(messages.conversationId, input.conversationId)
-  )
-  .orderBy(asc(messages.createdAt))
-  .limit(input.limit);
+        .orderBy(asc(messages.createdAt))
+        .limit(input.limit);
 
-return messagesList;
+      return messagesList;
     }),
 
   sendMessage: protectedProcedure
@@ -76,7 +75,6 @@ return messagesList;
       content: z.string().min(1),
     }))
     .mutation(async ({ ctx, input }) => {
- 
       const participant = await ctx.db.query.conversationParticipants.findFirst({
         where: and(
           eq(conversationParticipants.conversationId, input.conversationId),
@@ -106,10 +104,16 @@ return messagesList;
         });
       }
 
-      // Update conversation updatedAt
       await ctx.db.update(conversations)
         .set({ updatedAt: new Date() })
         .where(eq(conversations.id, input.conversationId));
+
+      // Trigger Pusher event
+      await pusherServer.trigger(
+        `chat-${input.conversationId}`,
+        'new-message',
+        newMessage
+      );
 
       return newMessage;
     }),
@@ -119,7 +123,6 @@ return messagesList;
       participantId: z.string(),
     }))
     .mutation(async ({ ctx, input }) => {
-      // Check if conversation already exists
       const existingConversation = await ctx.db.query.conversationParticipants.findFirst({
         where: and(
           eq(conversationParticipants.userId, ctx.session.user.id),
@@ -154,5 +157,21 @@ return messagesList;
       ]);
 
       return { id: newConversation.id };
+    }),
+
+  setTypingStatus: protectedProcedure
+    .input(z.object({
+      conversationId: z.number(),
+      isTyping: z.boolean(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      await pusherServer.trigger(
+        `chat-${input.conversationId}-typing`,
+        'typing-status',
+        {
+          userId: ctx.session.user.id,
+          isTyping: input.isTyping,
+        }
+      );
     }),
 });

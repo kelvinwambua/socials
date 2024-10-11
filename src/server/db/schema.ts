@@ -40,7 +40,6 @@ export interface ConversationWithParticipants extends Conversation {
   lastMessage?: Message;
 }
 
-// Socket event types
 export type MessageStatus = 'sent' | 'delivered' | 'read';
 
 export interface MessageEvent {
@@ -50,7 +49,6 @@ export interface MessageEvent {
   status?: MessageStatus;
 }
 
-// API response types
 export interface MessagesResponse {
   messages: MessageWithSenderImage[];
   nextCursor?: number;
@@ -61,7 +59,7 @@ export interface ConversationResponse {
   unreadCount?: number;
 }
 
-// Socket event types for type safety
+
 export interface ServerToClientEvents {
   'receive-message': (event: MessageEvent) => void;
   'message-status': (messageId: number, status: MessageStatus) => void;

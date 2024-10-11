@@ -6,6 +6,7 @@ import { TRPCError } from "@trpc/server";
 import type { InferSelectModel } from "drizzle-orm";
 import { pusherServer } from '~/server/pusher';
 
+
 type MessageType = InferSelectModel<typeof messages>;
 
 export const chatRouter = createTRPCRouter({

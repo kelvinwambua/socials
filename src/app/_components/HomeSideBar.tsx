@@ -1,4 +1,4 @@
-import { Home, Users, Calendar, BookOpen, Award, Settings } from 'lucide-react'
+import { Home, Users, Calendar, BookOpen, Award, Settings, ShoppingCart } from 'lucide-react'
 import { Button } from '~/components/ui/button'
 import CreatePostButton from './CreatePostButton'
 
@@ -7,7 +7,7 @@ export default function Sidebar() {
     { icon: Home, label: 'Home' },
     { icon: Users, label: 'Friends' },
     { icon: Calendar, label: 'Events' },
-    { icon: BookOpen, label: 'Courses' },
+    { icon: ShoppingCart, label: 'MarketPlace' },
     { icon: Award, label: 'Achievements' },
     { icon: Settings, label: 'Settings' },
   ]

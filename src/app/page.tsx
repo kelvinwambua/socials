@@ -146,7 +146,7 @@ const LandingHero: React.FC<HeroProps> = ({ title, subtitle, buttonText }) => {
             <h1 className="text-4xl lg:text-5xl xl:text-6xl font-bold lg:tracking-tight xl:tracking-tighter">
               {title}
             </h1>
-            <p className="text-lg mt-4 text-slate-400 max-w-xl">
+            <p className="text-lg mt-4  max-w-xl">
               {subtitle}
             </p>
             <div className="mt-8">
@@ -155,6 +155,7 @@ const LandingHero: React.FC<HeroProps> = ({ title, subtitle, buttonText }) => {
                 className="flex gap-1 items-center justify-center"
                 rel="noopener"
                 size="lg"
+                type="inverted"
               >
                 {buttonText}
                 <ArrowRightOutlined className="ml-2" />
@@ -163,19 +164,18 @@ const LandingHero: React.FC<HeroProps> = ({ title, subtitle, buttonText }) => {
           </div>
 
           <div className="relative lg:absolute lg:inset-y-0 lg:right-0 lg:w-1/2">
-    
             <div className="relative w-full h-64 sm:h-72 md:h-96 lg:absolute lg:inset-y-0 lg:right-0 lg:w-full lg:h-full">
-            <div className="relative w-full aspect-square max-w-md mx-auto">
-            <div className="relative w-full h-[500px] overflow-hidden spotlight-container">
-      <Image
-        src="/collegeImage.webp" 
-        alt="Students using app on campus"
-        fill
-        className="object-cover rounded-lg shadow-lg spotlight"
-        priority
-      />
-    </div>
-          </div>
+              <div className="relative w-full aspect-square max-w-md mx-auto">
+                <div className="relative w-full h-[500px] overflow-hidden spotlight-container">
+                  <Image
+                    src="/collegeImage.webp" 
+                    alt="Students using app on campus"
+                    fill
+                    className="object-cover rounded-lg shadow-lg spotlight"
+                    priority
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </div>

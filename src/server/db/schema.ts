@@ -143,6 +143,41 @@ export const posts = createTable(
     nameIndex: index("name_idx").on(example.content),
   })
 );
+export const likes = createTable(
+  "like",
+  {
+    id: serial("id").primaryKey(),
+    userId: varchar("user_id", { length: 255 })
+      .notNull()
+      .references(() => users.id),
+    postId: integer("post_id")
+      .notNull()
+      .references(() => posts.id),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+  },
+  (table) => ({
+    userPostIdx: index("user_post_idx").on(table.userId, table.postId),
+  })
+);
+
+export const likesRelations = relations(likes, ({ one }) => ({
+  user: one(users, {
+    fields: [likes.userId],
+    references: [users.id],
+  }),
+  post: one(posts, {
+    fields: [likes.postId],
+    references: [posts.id],
+  }),
+}));
+
+// Update the posts relations to include likes
+export const postsRelations = relations(posts, ({ many }) => ({
+  likes: many(likes),
+}));
+
 
 export const users = createTable("user", {
   id: varchar("id", { length: 255 })

@@ -3,8 +3,8 @@ import { z } from "zod";
 import TimeAgo from "javascript-time-ago";
 import en from 'javascript-time-ago/locale/en';
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "~/server/api/trpc";
-import { posts, users } from "~/server/db/schema";
-import { desc, eq, lt, lte } from "drizzle-orm";
+import { likes, posts, users } from "~/server/db/schema";
+import { and, desc, eq, lte, sql } from "drizzle-orm";
 
 TimeAgo.addDefaultLocale(en);
 const timeAgo = new TimeAgo('en-US');
@@ -54,7 +54,6 @@ export const postRouter = createTRPCRouter({
     }))
     .query(async ({ ctx, input }) => {
       const { limit, cursor } = input;
-
       const query = ctx.db
         .select({
           id: posts.id,
@@ -68,18 +67,22 @@ export const postRouter = createTRPCRouter({
           likes: posts.likesCount,
           comments: posts.commentsCount,
           shares: posts.sharesCount,
+          isLiked: likes.id,
         })
         .from(posts)
         .leftJoin(users, eq(users.id, posts.createdById))
+        .leftJoin(likes, and(
+          eq(likes.postId, posts.id),
+          eq(likes.userId, ctx.session.user.id)
+        ))
         .orderBy(desc(posts.createdAt))
         .limit(limit + 1);
 
       if (cursor) {
-        const postQuery = query.where(lte(posts.id, Number(cursor)));
+        query.where(lte(posts.id, Number(cursor)));
       }
 
       const rawPosts = await query;
-
       const items = rawPosts.slice(0, limit).map(post => ({
         id: post.id.toString(),
         type: post.type,
@@ -94,6 +97,7 @@ export const postRouter = createTRPCRouter({
         likes: post.likes ?? 0,
         comments: post.comments ?? 0,
         shares: post.shares ?? 0,
+        isLiked: !!post.isLiked,
       }));
 
       let nextCursor: string | null = null;
@@ -107,6 +111,39 @@ export const postRouter = createTRPCRouter({
         nextCursor,
       };
     }),
+
+    likePost: protectedProcedure
+    .input(z.object({ postId: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      const existingLike = await ctx.db.query.likes.findFirst({
+        where: and(
+          eq(likes.postId, input.postId),
+          eq(likes.userId, ctx.session.user.id)
+        ),
+      });
+
+      if (existingLike) {
+        // Unlike the post
+        await ctx.db.delete(likes).where(eq(likes.id, existingLike.id));
+        await ctx.db.update(posts)
+          .set({ 
+            likesCount: sql`${posts.likesCount} - 1`
+          })
+          .where(eq(posts.id, input.postId));
+        return { liked: false };
+      } else {
+        // Like the post
+        await ctx.db.insert(likes).values({
+          postId: input.postId,
+          userId: ctx.session.user.id,
+        });
+        await ctx.db.update(posts)
+          .set({ 
+            likesCount: sql`${posts.likesCount} + 1`
+          })
+          .where(eq(posts.id, input.postId));
+        return { liked: true };
+      }}),
 
   createPost: protectedProcedure
     .input(
@@ -125,4 +162,5 @@ export const postRouter = createTRPCRouter({
       });
       return post;
     }),
+
 });

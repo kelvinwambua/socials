@@ -123,7 +123,7 @@ export const postRouter = createTRPCRouter({
       });
 
       if (existingLike) {
-        // Unlike the post
+
         await ctx.db.delete(likes).where(eq(likes.id, existingLike.id));
         await ctx.db.update(posts)
           .set({ 
@@ -132,7 +132,7 @@ export const postRouter = createTRPCRouter({
           .where(eq(posts.id, input.postId));
         return { liked: false };
       } else {
-        // Like the post
+     
         await ctx.db.insert(likes).values({
           postId: input.postId,
           userId: ctx.session.user.id,

@@ -43,6 +43,13 @@
       "when": 1728570062476,
       "tag": "0005_burly_puppet_master",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1728735964137,
+      "tag": "0006_confused_tomas",
+      "breakpoints": true
     }
   ]
 }

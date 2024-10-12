@@ -19,6 +19,7 @@ export const env = createEnv({
     GOOGLE_CLIENT_SECRET: z.string(),
     PUSHER_APP_ID: z.string(),
     PUSHER_SECRET: z.string(),
+    UPLOADTHING_TOKEN: z.string(),
   },
   client: {
     NEXT_PUBLIC_PUSHER_KEY: z.string(),
@@ -35,6 +36,7 @@ export const env = createEnv({
     PUSHER_SECRET: process.env.PUSHER_SECRET,
     NEXT_PUBLIC_PUSHER_KEY: process.env.NEXT_PUBLIC_PUSHER_KEY,
     NEXT_PUBLIC_PUSHER_CLUSTER: process.env.NEXT_PUBLIC_PUSHER_CLUSTER,
+    UPLOADTHING_TOKEN: process.env.UPLOADTHING_TOKEN,
   },
   skipValidation: !!process.env.SKIP_ENV_VALIDATION,
   emptyStringAsUndefined: true,

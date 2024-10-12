@@ -1,4 +1,4 @@
-import { InferSelectModel, relations, sql } from "drizzle-orm";
+import { InferSelectModel, like, relations, sql } from "drizzle-orm";
 import {
   index,
   integer,
@@ -73,15 +73,64 @@ export interface ClientToServerEvents {
   'mark-as-read': (messageId: number) => void;
   'typing': (conversationId: number, isTyping: boolean) => void;
 }
+  // {
+  //   id: '2',
+  //   type: 'image',
+  //   author: {
+  //     name: 'John Smith',
+  //     avatar: 'https://i.pravatar.cc/150?img=2',
+  //     university: 'MIT',
+  //   },
+  //   content: 'Check out this amazing sunset on campus! 🌅',
+  //   media: 'https://utfs.io/f/NZEym2bBuewNBmYWSmTnNaVrYpkMWJxHmRBE3uK8IiPcZ4QL',
+  //   timestamp: '4h ago',
+  //   likes: 78,
+  //   comments: 12,
+  //   shares: 5,
+  // },
+//   createPost: protectedProcedure
+//   .input(
+//     z.object({
+//       content: z.string().min(1).max(500),
+//       media: z.string().optional(),
+//       type: z.enum(['text', 'image', 'video']),
+// }))
+// .mutation(async ({ ctx, input }) => {
+//   const post = await ctx.db.insert(posts).values({
+//     userId: ctx.session.user.id,
+//     content: input.content,
+//     media: input.media,
+//     type: input.type,
+//     createdById: ctx.session.user.id,
+//   });
 
+//   return post;
+// }),
+
+export const postData = createTable(
+  "postData",
+  {
+    id: serial("id").primaryKey(),
+    postId: integer("post_id").notNull().references(() => posts.id),
+    userId: varchar("user_id", { length: 255 }).notNull().references(() => users.id),
+    likes: integer("likes").default(0),
+    comments: integer("comments").default(0),
+    shares: integer("shares").default(0),
+  }
+)
 export const posts = createTable(
   "post",
   {
     id: serial("id").primaryKey(),
-    name: varchar("name", { length: 256 }),
+    content: varchar("name", { length: 500 }).notNull(),
+    type: varchar("type", { length: 20 }).notNull(),
+    media: varchar("media", { length: 255 }),
     createdById: varchar("created_by", { length: 255 })
       .notNull()
       .references(() => users.id),
+    likesCount: integer("likes_count").default(0),
+    commentsCount: integer("comments_count").default(0),
+    sharesCount: integer("shares_count").default(0),
     createdAt: timestamp("created_at", { withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
@@ -91,7 +140,7 @@ export const posts = createTable(
   },
   (example) => ({
     createdByIdIdx: index("created_by_idx").on(example.createdById),
-    nameIndex: index("name_idx").on(example.name),
+    nameIndex: index("name_idx").on(example.content),
   })
 );
 
@@ -107,6 +156,14 @@ export const users = createTable("user", {
     withTimezone: true,
   }).default(sql`CURRENT_TIMESTAMP`),
   image: varchar("image", { length: 255 }),
+});
+export const events = createTable('events', {
+  id: serial('id').primaryKey(),
+  title: varchar('title', { length: 255 }).notNull(),
+  description: text('description'),
+  date: timestamp('date').notNull(),
+  createdBy: varchar('created_by', { length: 255 }).references(() => users.id),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
 export const usersRelations = relations(users, ({ many }) => ({

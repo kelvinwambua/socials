@@ -173,10 +173,11 @@ export const likesRelations = relations(likes, ({ one }) => ({
   }),
 }));
 
-// Update the posts relations to include likes
 export const postsRelations = relations(posts, ({ many }) => ({
   likes: many(likes),
 }));
+
+
 
 
 export const users = createTable("user", {
@@ -364,6 +365,8 @@ export const messagesRelations = relations(messages, ({ one }) => ({
     fields: [messages.senderId],
     references: [users.id],
   }),
+
+  
 }));
 
 

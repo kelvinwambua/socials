@@ -168,7 +168,7 @@ const LandingHero: React.FC<HeroProps> = ({ title, subtitle, buttonText }) => {
               <div className="relative w-full aspect-square max-w-md mx-auto">
                 <div className="relative w-full h-[500px] overflow-hidden spotlight-container">
                   <Image
-                    src="/collegeImage.webp" 
+                    src="/Community.jpg" 
                     alt="Students using app on campus"
                     fill
                     className="object-cover rounded-lg shadow-lg spotlight"
@@ -267,7 +267,7 @@ const LandingTestimonials: React.FC<TestimonialsProps> = ({ title, subtitle, tes
                 <div className="flex items-center gap-4">
                   <Image
                     alt=""
-                    src={testimonial.avatar}
+                    src={testimonial.avatar} 
                     width={56}
                     height={56}
                     className="rounded-full object-cover"
@@ -391,22 +391,22 @@ export default function LandingPage() {
 
   const testimonials: Testimonial[] = [
     {
-      name: 'Samantha J.',
-      content: "Sonder has been a game-changer for my social life on campus. I've made friends I never would have met otherwise!",
-      designation: 'Stanford University',
-      avatar: '/woman.png',
+      name: 'Keane M.',
+      content: "If it were not for this app, I would be single🤷‍♂️",
+      designation: 'BBIT Year 4',
+      avatar: '/Keane.jpg',
     },
     {
-      name: 'Tony R.',
-      content: "As an international student, Sonder helped me find my community and make lasting friendships. It's been invaluable!",
-      designation: 'MIT',
-      avatar: '/man.png',
+      name: 'Claude K.',
+      content: "I love this app😍",
+      designation: 'CNS Year 3',
+      avatar: '/Claude.jpg',
     },
     {
-      name: 'Marcus T.',
-      content: "From study groups to weekend hangouts, Sonder has made campus life so much more enjoyable and connected.",
-      designation: 'UC Berkeley',
-      avatar: '/man.png',
+      name: 'Lyon A.',
+      content: "Since downloading sonder I have been able to make many new friends!😊",
+      designation: 'BICS Year 1',
+      avatar: '/Lyon.jpg',
     },
   ]
 

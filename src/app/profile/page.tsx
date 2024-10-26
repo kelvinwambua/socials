@@ -105,7 +105,7 @@ export default function ProfileSetup() {
         variant: 'default',
       })
 
-      router.push('/dashboard')
+      router.push('/swipe')
     } catch (error) {
       console.error('Profile setup error:', error)
 

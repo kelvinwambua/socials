@@ -1,4 +1,6 @@
+import { Description } from "@radix-ui/react-toast";
 import { InferSelectModel, like, relations, sql } from "drizzle-orm";
+import { int } from "drizzle-orm/mysql-core";
 import {
   index,
   integer,
@@ -9,6 +11,7 @@ import {
   timestamp,
   varchar,
 } from "drizzle-orm/pg-core";
+import { times } from "lodash";
 import { type AdapterAccount } from "next-auth/adapters";
 
 /**
@@ -319,6 +322,16 @@ export const swipes = createTable('swipes', {
   direction: text('direction').notNull(), 
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
+export const products = createTable("product",{
+  id:serial("id").primaryKey(),
+  title:varchar("title",{length:225}).notNull(),
+  description:text("description"),
+  category:text("category"),
+  price:integer("price").notNull(),
+  sellerId:varchar("seller_id",{length:225}).references(()=>users.id).notNull(),
+  image:varchar("image",{length:255}).notNull(),
+  createdAt:timestamp("created_at").defaultNow().notNull()
+})
 
 
 export const conversations = createTable('conversations', {
@@ -365,6 +378,7 @@ export const messagesRelations = relations(messages, ({ one }) => ({
     fields: [messages.senderId],
     references: [users.id],
   }),
+
 
   
 }));

@@ -22,16 +22,14 @@ type Product = {
   id: string
   title: string
   price: number
-  images: string[]
+  image: string
+  timestamp:string
   description: string
-  location: string
   category: string
-  condition: string
-  seller: {
+  author: {
     name: string
     avatar: string
     university: string
-    rating: number
   }
 }
 

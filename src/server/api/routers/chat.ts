@@ -1,13 +1,12 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { messages, conversations, conversationParticipants, users } from "~/server/db/schema";
-import { eq, and, desc, lt, asc, sql, ne, gt } from "drizzle-orm";
+import { eq, and, desc, lt, asc, sql, ne, } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
-import type { InferSelectModel } from "drizzle-orm";
+
 import { pusherServer } from '~/server/pusher';
 
 
-type MessageType = InferSelectModel<typeof messages>;
 
 export const chatRouter = createTRPCRouter({
   getConversations: protectedProcedure.query(async ({ ctx }) => {

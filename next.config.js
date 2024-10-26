@@ -26,7 +26,7 @@ const config = {
     ];
   },
   images: {
-    domains: ["utfs.io","unsplash.com","example.com","github.com"],
+    domains: ["utfs.io","unsplash.com","source.unsplash.com","example.com","github.com"],
     remotePatterns: [
       {
         protocol: 'https',

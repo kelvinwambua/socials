@@ -3,9 +3,8 @@ import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { products, users } from "~/server/db/schema";
 import { eq, and, desc, lt, asc, sql, like, or, ne } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
-import type { InferSelectModel } from "drizzle-orm";
 
-type Product = InferSelectModel<typeof products>;
+
 
 export const marketplaceRouter = createTRPCRouter({
   getProducts: protectedProcedure

@@ -5,7 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useInView } from 'react-intersection-observer'
-import { Search, Filter, Heart, Loader2, X, ShoppingCart, Menu } from 'lucide-react'
+import { Search, Filter, Heart, Loader2, X, ShoppingCart, Menu, Plus } from 'lucide-react'
 import { Input } from '../../components/ui/input'
 import { Button } from '../../components/ui/button'
 import { Card, CardContent } from '../../components/ui/card'
@@ -19,6 +19,8 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle} fr
 import { Sheet, SheetContent,  SheetTrigger } from "../../components/ui/sheet"
 import { api } from "../../trpc/react"
 import { useDebounce } from '../../hooks/use-debounce'
+import ProductListingDialog from '../_components/ListProduct'
+import { useRouter } from 'next/navigation'
 
 const categories = ['All', 'Books', 'Electronics', 'Furniture', 'Clothing', 'Other'] as const
 type Category = (typeof categories)[number]
@@ -48,6 +50,7 @@ interface ProductWithSeller {
 }
 
 const SearchBar: React.FC<{ value: string; onChange: (event: React.ChangeEvent<HTMLInputElement>) => void }> = ({ value, onChange }) => (
+  
   <div className="relative group flex-1 max-w-xl">
     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 group-hover:text-red-500 transition-colors" />
     <Input
@@ -70,6 +73,7 @@ const SearchBar: React.FC<{ value: string; onChange: (event: React.ChangeEvent<H
 
 const ProductCard: React.FC<{ item: ProductWithSeller }> = ({ item }) => {
   const [isHovered, setIsHovered] = useState(false)
+  const router = useRouter()
 
   return (
     <motion.div
@@ -106,7 +110,7 @@ const ProductCard: React.FC<{ item: ProductWithSeller }> = ({ item }) => {
                 className="absolute inset-0 bg-gray-900/60 flex items-center justify-center"
               >
                 <div className="space-y-4">
-                  <Button variant="outline" className="bg-white/10 hover:bg-white/20 text-white">
+                  <Button variant="outline" className="bg-white/10 hover:bg-white/20 text-white"onClick={()=>router.push(`/market/${item.product.id}`)}>
                     View Details
                   </Button>
                 </div>
@@ -191,14 +195,14 @@ const FilterDialog: React.FC<{
           <label className="text-sm font-medium text-gray-200">Price Range</label>
           <div className="flex items-center space-x-4">
             <Input
-              type="number"
+              type="text"
               value={priceRange[0]}
               onChange={(e) => onPriceRangeChange([Number(e.target.value), priceRange[1]])}
               className="w-24 bg-gray-800 border-gray-700 text-white"
             />
             <span className="text-gray-400">to</span>
             <Input
-              type="number"
+              type="text"
               value={priceRange[1]}
               onChange={(e) => onPriceRangeChange([priceRange[0], Number(e.target.value)])}
               className="w-24 bg-gray-800 border-gray-700 text-white"
@@ -316,6 +320,12 @@ const Marketplace: React.FC = () => {
               <SearchBar value={searchTerm} onChange={handleSearchChange} />
             </div>
             <div className="flex items-center space-x-4">
+            <ProductListingDialog>
+          <Button className="hidden md:flex items-center bg-red-600 hover:bg-red-700 text-white">
+            <Plus className="h-4 w-4 mr-2" />
+            List Product
+          </Button>
+        </ProductListingDialog>
               <Sheet>
                 <SheetTrigger asChild>
                   <Button variant="ghost" size="icon" className="md:hidden">
@@ -332,6 +342,7 @@ const Marketplace: React.FC = () => {
                       <Heart className="h-5 w-5" />
                       <span>Wishlist</span>
                     </Link>
+       
                     <Button
                       onClick={() => setIsFilterOpen(true)}
                       variant="outline"

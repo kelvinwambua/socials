@@ -5,6 +5,7 @@ import React, { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { ArrowRightOutlined, CloseOutlined, MenuOutlined, LinkedinFilled, TwitterCircleFilled } from '@ant-design/icons'
+import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar'
 
 const Logo: React.FC<{ _isLabel?: boolean; height?: number }> = ({ _isLabel, height = 40 }) => (
   <div style={{ height }}>
@@ -260,18 +261,15 @@ const LandingTestimonials: React.FC<TestimonialsProps> = ({ title, subtitle, tes
           </p>
         </div>
 
-        <div className="mt-8 [column-fill:_balance] sm:columns-2 sm:gap-6 lg:columns-3 lg:gap-8">
+        <div className="mt-8 grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {testimonials.map((testimonial, idx) => (
-            <div key={`testimonial-${idx}`} className="mb-8 sm:break-inside-avoid">
-              <blockquote className="rounded-lg bg-gray-900 p-6 shadow-sm sm:p-8">
+            <div key={`testimonial-${idx}`} className="h-full">
+              <blockquote className="rounded-lg bg-gray-900 p-6 shadow-sm sm:p-8 h-full flex flex-col">
                 <div className="flex items-center gap-4">
-                  <Image
-                    alt=""
-                    src={testimonial.avatar} 
-                    width={56}
-                    height={56}
-                    className="rounded-full object-cover"
-                  />
+                  <Avatar className="h-14 w-14">
+                    <AvatarImage src={testimonial.avatar} alt={testimonial.name} />
+                    <AvatarFallback>{testimonial.name.charAt(0)}</AvatarFallback>
+                  </Avatar>
 
                   <div>
                     <p className="mt-0.5 text-lg font-medium text-slate-300">
@@ -283,7 +281,7 @@ const LandingTestimonials: React.FC<TestimonialsProps> = ({ title, subtitle, tes
                   </div>
                 </div>
 
-                <p className="mt-4 text-slate-400">{testimonial.content}</p>
+                <p className="mt-4 text-slate-400 flex-grow">{testimonial.content}</p>
               </blockquote>
             </div>
           ))}

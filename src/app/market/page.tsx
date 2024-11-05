@@ -21,6 +21,8 @@ import { api } from "../../trpc/react"
 import { useDebounce } from '../../hooks/use-debounce'
 import ProductListingDialog from '../_components/ListProduct'
 import { useRouter } from 'next/navigation'
+import { AvatarImage, Avatar } from '~/components/ui/avatar'
+import { AvatarFallback } from '@radix-ui/react-avatar'
 
 const categories = ['All', 'Books', 'Electronics', 'Furniture', 'Clothing', 'Other'] as const
 type Category = (typeof categories)[number]
@@ -127,14 +129,12 @@ const ProductCard: React.FC<{ item: ProductWithSeller }> = ({ item }) => {
           <p className="text-2xl font-bold text-red-500 mb-2">${item.product.price.toFixed(2)}</p>
           <div className="flex items-center justify-between">
             <div className="flex items-center">
-              <Image
-                src={item.seller.image ?? '/placeholder.svg?height=24&width=24'}
-                alt={item.seller.name ?? 'Seller'}
-                width={24}
-                height={24}
-                className="rounded-full mr-2"
-              />
-              <span className="text-sm text-gray-300">{item.seller.name}</span>
+       
+              <Avatar className='mr-2'>
+                <AvatarImage src={item.seller.image ?? '/placeholder.svg?height=24&width=24'} />
+                <AvatarFallback>{item.seller.name?.charAt(0).toUpperCase()}</AvatarFallback>
+              </Avatar>
+              <span className="text-base text-gray-300">{item.seller.name}</span>
             </div>
             <span className="text-xs text-gray-400">
               {new Date(item.product.createdAt).toLocaleDateString()}

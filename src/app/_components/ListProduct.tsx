@@ -6,11 +6,12 @@ import { api } from '~/trpc/react'
 import { Button } from '~/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "~/components/ui/dialog"
 import { useToast } from '~/hooks/use-toast'
-import { Loader2, Image, X, Tag, DollarSign } from 'lucide-react'
+import { Loader2, X, Tag} from 'lucide-react'
 import { Input } from "~/components/ui/input"
 import { Textarea } from "~/components/ui/textarea"
 import { UploadButton } from '~/lib/uploadthing'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select"
+import { set } from 'lodash'
 
 const categories = ['Books', 'Electronics', 'Furniture', 'Clothing', 'Other'] as const
 
@@ -173,6 +174,7 @@ export default function ProductListingDialog({ children }: { children: React.Rea
               <div className="flex justify-center">
                 <UploadButton
                   endpoint="imageUploader"
+
                   onClientUploadComplete={(res) => {
                     setFormData(prev => ({ ...prev, image: res?.[0]?.url ?? '' }))
                     toast({

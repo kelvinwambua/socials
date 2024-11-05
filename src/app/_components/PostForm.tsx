@@ -6,8 +6,7 @@ import { api } from '~/trpc/react'
 import { Button } from '~/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "~/components/ui/dialog"
 import { useToast } from '~/hooks/use-toast'
-import { Loader2, Image, Video, Type, X, Send, Paperclip } from 'lucide-react'
-import { cn } from "~/lib/utils"
+import { Loader2, X, Send } from 'lucide-react'
 import { Textarea } from "~/components/ui/textarea"
 import { UploadButton } from '~/lib/uploadthing'
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar"

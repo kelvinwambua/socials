@@ -30,6 +30,11 @@ const config = {
     remotePatterns: [
       {
         protocol: 'https',
+        hostname: 'utfs.io',
+        pathname: '/a/**',
+      },
+      {
+        protocol: 'https',
         hostname: 'lh3.googleusercontent.com',
         pathname: '/a/**',
       },

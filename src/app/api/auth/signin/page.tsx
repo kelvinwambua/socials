@@ -25,7 +25,7 @@ export default function Component() {
   const handleSignIn = async (): Promise<void> => {
     setIsLoading(true)
     try {
-      const result = await signIn('google', { callbackUrl: '/profile' })
+      const result = await signIn('google', { callbackUrl: '/profile-setup' })
       if (result?.error) {
         console.error('Sign-in error:', result.error)
       }

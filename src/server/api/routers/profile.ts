@@ -253,4 +253,56 @@ export const profileRouter = createTRPCRouter({
     
         return friendsWithProfiles;
       }),
+  
+getProfile: protectedProcedure
+.query(async ({ ctx }) => {
+  const profile = await ctx.db.query.profiles.findFirst({
+    where: eq(profiles.userId, ctx.session.user.id),
+  });
+  
+  if (!profile) {
+    throw new TRPCError({
+      code: 'NOT_FOUND',
+      message: 'Profile not found',
+    });
+  }
+  
+  return profile;
+}),
+
+update: protectedProcedure
+.input(z.object({
+  displayName: z.string().min(1).max(50),
+  bio: z.string().max(500).optional(),
+  major: z.string().min(1).max(100),
+  graduationYear: z.number().int().min(2000).max(2100),
+  interests: z.array(z.string().max(50)).max(10),
+}))
+.mutation(async ({ ctx, input }) => {
+  const filter = new Filter();
+
+  if (filter.isProfane(input.displayName)) {
+    throw new TRPCError({
+      code: 'BAD_REQUEST',
+      message: 'Display name contains inappropriate language',
+    });
+  }
+
+  if (input.bio && filter.isProfane(input.bio)) {
+    throw new TRPCError({
+      code: 'BAD_REQUEST',
+      message: 'Bio contains inappropriate language',
+    });
+  }
+
+  await ctx.db
+    .update(profiles)
+    .set({
+      ...input,
+      updatedAt: new Date(),
+    })
+    .where(eq(profiles.userId, ctx.session.user.id));
+
+  return { success: true };
+}),
 });

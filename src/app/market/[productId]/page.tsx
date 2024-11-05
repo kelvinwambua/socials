@@ -4,7 +4,6 @@ import React, { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter, useParams } from 'next/navigation'
-import { motion } from 'framer-motion'
 import { ArrowLeft, Heart, Share2, ShoppingCart, MessageCircle } from 'lucide-react'
 import { Button } from '../../../components/ui/button'
 import { Card } from '../../../components/ui/card'
@@ -134,6 +133,7 @@ const ProductPage: React.FC = () => {
                 className="object-cover"
                 onLoadingComplete={() => setIsImageLoading(false)}
                 sizes="(max-width: 768px) 100vw, 50vw"
+                quality={100}
                 priority
               />
             </div>

@@ -3,12 +3,12 @@
 import React, { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { api } from '~/trpc/react';
-import { Button } from "../../components/ui/button";
-import { Input } from "../../components/ui/input";
-import { Textarea } from "../../components/ui/textarea";
-import { Avatar, AvatarFallback, AvatarImage } from "../../components/ui/avatar";
-import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
-import { Label } from "../../components/ui/label";
+import { Button } from "../../../components/ui/button";
+import { Input } from "../../../components/ui/input";
+import { Textarea } from "../../../components/ui/textarea";
+import { Avatar, AvatarFallback, AvatarImage } from "../../../components/ui/avatar";
+import { Card, CardContent, CardHeader, CardTitle } from "../../../components/ui/card";
+import { Label } from "../../../components/ui/label";
 import { 
   Loader2, 
   GraduationCap, 
@@ -21,9 +21,9 @@ import {
   Repeat,
   PenSquare
 } from 'lucide-react';
-import { useToast } from '../../hooks/use-toast';
-import { ScrollArea } from "../../components/ui/scroll-area";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/tabs";
+import { useToast } from '../../../hooks/use-toast';
+import { ScrollArea } from "../../../components/ui/scroll-area";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../../components/ui/tabs";
 import ReactPlayer from "react-player";
 import Image from 'next/image';
 
@@ -137,56 +137,36 @@ export default function ProfilePage() {
 
   const renderMedia = (post: Post) => {
     switch (post.type) {
-        case 'image':
-            return (
-              <div className="relative w-full mb-4">
-                <div className="relative aspect-[16/9] w-full overflow-hidden rounded-lg">
-                  <Image 
-                    src={post.media!} 
-                    alt={post.content}
-                    layout="fill"
-                    objectFit="contain" // Changed from cover to contain
-                    className="bg-slate-800" // Added background color
-                  />
-                </div>
-              </div>
-            );
-          case 'video':
-            return (
-              <div className="relative w-full mb-4">
-                <div className="relative aspect-[16/9] w-full overflow-hidden rounded-lg bg-slate-800">
-                  <ReactPlayer
-                    url={post.media}
-                    width="100%"
-                    height="100%"
-                    playing={playingVideoId === post.id}
-                    controls={true}
-                    light={true}
-                    onPlay={() => setPlayingVideoId(post.id)}
-                    onPause={() => setPlayingVideoId(null)}
-                    style={{ 
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                    }}
-                    config={{
-                      file: {
-                        attributes: {
-                          style: {
-                            width: '100%',
-                            height: '100%',
-                            objectFit: 'contain', // Changed from cover to contain
-                          }
-                        }
-                      }
-                    }}
-                  />
-                </div>
-              </div>
-            );
-          default:
-            return null;
-        }
+      case 'image':
+        return (
+          <div className="relative aspect-video w-full overflow-hidden rounded-md">
+            <Image 
+              src={post.media!} 
+              alt={post.content} 
+              layout="fill" 
+              objectFit="cover"
+              className="transition-transform hover:scale-105"
+            />
+          </div>
+        );
+      case 'video':
+        return (
+          <div className="relative aspect-video w-full rounded-md overflow-hidden bg-slate-800">
+            <ReactPlayer
+              url={post.media}
+              width="100%"
+              height="100%"
+              playing={playingVideoId === post.id}
+              controls={true}
+              light={true}
+              onPlay={() => setPlayingVideoId(post.id)}
+              onPause={() => setPlayingVideoId(null)}
+            />
+          </div>
+        );
+      default:
+        return null;
+    }
   };
 
   if (profileLoading) {
@@ -201,37 +181,32 @@ export default function ProfilePage() {
     <div className="min-h-screen bg-black text-white">
       <ScrollArea className="h-[calc(100vh-4rem)]">
         <div className="max-w-4xl mx-auto p-4 space-y-6">
-
-        <div className="relative w-full rounded-xl">
-  
-  <div className="w-full h-48 rounded-xl bg-gradient-to-r from-red-900 to-red-600">
-
-    <div className="absolute bottom-4 left-8 right-8 flex items-end justify-between">
-      <div className="flex items-end space-x-4">
-        <Avatar className="h-28 w-28 border-4 border-red-500">
-          <AvatarImage src={session?.user?.image ?? undefined} />
-          <AvatarFallback>{session?.user?.name?.[0] ?? 'U'}</AvatarFallback>
-        </Avatar>
-        <div>
-          <h1 className="text-3xl font-bold">{profile?.displayName}</h1>
-          <p className="text-slate-300">{profile?.university}</p>
-        </div>
-      </div>
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={() => setIsEditing(!isEditing)}
-      >
-        <PenSquare className="h-4 w-4 mr-2" />
-        {isEditing ? 'Cancel' : 'Edit Profile'}
-      </Button>
-    </div>
-  </div>
-</div>
+          {/* Profile Header */}
+          <div className="relative w-full h-48 rounded-xl bg-gradient-to-r from-red-600 to-purple-600">
+            <div className="absolute -bottom-16 left-8 flex items-end space-x-4">
+              <Avatar className="h-32 w-32 border-4 border-black">
+                <AvatarImage src={session?.user?.image ?? undefined} />
+                <AvatarFallback>{session?.user?.name?.[0] ?? 'U'}</AvatarFallback>
+              </Avatar>
+              <div className="mb-4">
+                <h1 className="text-3xl font-bold">{profile?.displayName}</h1>
+                <p className="text-slate-300">{profile?.university}</p>
+              </div>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              className="absolute bottom-4 right-4"
+              onClick={() => setIsEditing(!isEditing)}
+            >
+              <PenSquare className="h-4 w-4 mr-2" />
+              {isEditing ? 'Cancel' : 'Edit Profile'}
+            </Button>
+          </div>
 
           <div className="mt-20">
             {isEditing ? (
-            
+              // Edit Profile Form
               <form onSubmit={handleSubmit} className="space-y-6">
                 <Card className="bg-slate-900 border-slate-800">
                   <CardContent className="pt-6 space-y-4">

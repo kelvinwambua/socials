@@ -104,49 +104,54 @@ export default function Feed() {
     switch (post.type) {
       case 'image':
         return (
-          <div className="relative h-64 w-full mb-4">
-            <Image 
-              src={post.media!} 
-              alt={post.content} 
-              layout="fill" 
-              objectFit="cover" 
-              className="rounded-lg"
-            />
+          <div className="relative w-full mb-4">
+            <div className="relative aspect-[16/9] w-full overflow-hidden rounded-lg">
+              <Image 
+                src={post.media!} 
+                alt={post.content}
+                layout="fill"
+                objectFit="contain" // Changed from cover to contain
+                className="bg-slate-800" // Added background color
+              />
+            </div>
           </div>
         );
       case 'video':
         return (
-          <div className="relative h-64 w-full mb-4 bg-slate-800 rounded-lg overflow-hidden">
-            <ReactPlayer
-              url={post.media}
-              width="100%"
-              height="100%"
-              playing={playingVideoId === post.id}
-              controls={true}
-              
-              loop={true}
-              light={true}
-              onEnded={() => handleVideoEnd(post.id)}
-              onPause={() => setPlayingVideoId(null)}
-              onPlay={() => setPlayingVideoId(post.id)}
-              config={{
-                file: {
-                  attributes: {
-                    style: { 
-                      width: '100%', 
-                      height: '100%', 
-                      objectFit: 'cover'
+          <div className="relative w-full mb-4">
+            <div className="relative aspect-[16/9] w-full overflow-hidden rounded-lg bg-slate-800">
+              <ReactPlayer
+                url={post.media}
+                width="100%"
+                height="100%"
+                playing={playingVideoId === post.id}
+                controls={true}
+                light={true}
+                onPlay={() => setPlayingVideoId(post.id)}
+                onPause={() => setPlayingVideoId(null)}
+                style={{ 
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                }}
+                config={{
+                  file: {
+                    attributes: {
+                      style: {
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'contain', // Changed from cover to contain
+                      }
                     }
                   }
-                }
-              }}
-            />
+                }}
+              />
+            </div>
           </div>
         );
       default:
         return null;
-    }
-  };
+    }  };
 
   return (
     <div className="flex-grow max-w-2xl mx-auto space-y-6">

@@ -33,7 +33,78 @@ export const postRouter = createTRPCRouter({
         greeting: `Hello ${input.text}`,
       };
     }),
-
+    getUserPosts: protectedProcedure
+    .input(z.object({
+      userId: z.string(),
+      limit: z.number().min(1).max(100).default(10),
+      cursor: z.string().nullable().default(null),
+    }))
+    .output(z.object({
+      items: z.array(PostSchema),
+      nextCursor: z.string().nullable(),
+    }))
+    .query(async ({ ctx, input }) => {
+      const { userId, limit, cursor } = input;
+      
+      const conditions = [eq(posts.createdById, userId)];
+      
+      if (cursor) {
+        conditions.push(lte(posts.id, Number(cursor)));
+      }
+  
+      const rawPosts = await ctx.db
+        .select({
+          id: posts.id,
+          type: posts.type,
+          content: posts.content,
+          media: posts.media,
+          createdAt: posts.createdAt,
+          authorId: posts.createdById,
+          authorName: users.name,
+          authorImage: users.image,
+          likes: posts.likesCount,
+          comments: posts.commentsCount,
+          shares: posts.sharesCount,
+          isLiked: likes.id,
+        })
+        .from(posts)
+        .leftJoin(users, eq(users.id, posts.createdById))
+        .leftJoin(likes, and(
+          eq(likes.postId, posts.id),
+          eq(likes.userId, ctx.session.user.id)
+        ))
+        .where(and(...conditions))
+        .orderBy(desc(posts.createdAt))
+        .limit(limit + 1);
+  
+      const items = rawPosts.slice(0, limit).map(post => ({
+        id: post.id.toString(),
+        type: post.type as 'text' | 'image' | 'video',
+        author: {
+          name: post.authorName ?? 'Unknown',
+          avatar: post.authorImage ?? 'https://i.pravatar.cc/150',
+          university: "Unknown",
+        },
+        content: post.content,
+        media: post.media ?? undefined,
+        timestamp: timeAgo.format(new Date(post.createdAt)),
+        likes: post.likes ?? 0,
+        comments: post.comments ?? 0,
+        shares: post.shares ?? 0,
+        isLiked: !!post.isLiked,
+      }));
+  
+      let nextCursor: string | null = null;
+      if (rawPosts.length > limit) {
+        const lastPost = rawPosts[limit - 1];
+        nextCursor = lastPost?.id.toString() ?? null;
+      }
+  
+      return {
+        items,
+        nextCursor,
+      };
+    }),
   getLatest: publicProcedure.query(async ({ ctx }) => {
     const post = await ctx.db.query.posts.findFirst({
       orderBy: (posts, { desc }) => [desc(posts.createdAt)],

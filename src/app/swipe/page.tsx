@@ -6,8 +6,8 @@ import { api } from '~/trpc/react'
 import { useToast } from "../../hooks/use-toast"
 import { Button } from "../../components/ui/button"
 import { motion, AnimatePresence } from 'framer-motion'
-import { Loader2 } from 'lucide-react'
-
+import { Home, Loader2 } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 interface User {
   id: string;
   name: string;
@@ -24,6 +24,7 @@ interface User {
 
 function SwipeInterface() {
   const { toast } = useToast()
+  const router = useRouter()
   const [currentUser, setCurrentUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const { refetch: refetchNextUser } = api.profile.getNextUser.useQuery(undefined, {
@@ -128,6 +129,13 @@ function SwipeInterface() {
                 className="bg-red-600 text-white hover:bg-red-700 transition-colors"
               >
                 Find More Users
+              </Button>
+              <Button
+                onClick={() => router.push('/home')}
+                className="bg-red-600 text-white hover:bg-red-700 transition-colors"
+              >
+                <Home size={20} className="mr-2" />
+                Got to home
               </Button>
             </motion.div>
           ) : (

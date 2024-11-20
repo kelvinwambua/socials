@@ -1,11 +1,21 @@
-// app/page.tsx
-import { Suspense } from 'react'
+"use client"
+import { Suspense, useEffect } from 'react'
 import Header from '../_components/Header'
 import Sidebar from '../_components/HomeSideBar'
 import Feed from '../_components/Feed'
 import Widgets from '../_components/Widget'
+import { api } from '~/trpc/react'
+import { useRouter } from 'next/navigation'
 
 export default function Home() {
+  const router = useRouter()
+  const profileExists = api.profile.exists.useQuery()
+  useEffect(() => {
+    if (profileExists.data?.exists === false) {
+      router.push('/profile-setup')
+    }
+  }, [profileExists.data])
+
   return (
     <div className="bg-black min-h-screen text-white">
       <Header />

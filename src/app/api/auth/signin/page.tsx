@@ -6,6 +6,7 @@ import {  Loader2 } from 'lucide-react'
 import Link from 'next/link'
 import { cn } from '~/lib/utils'
 import { GoogleOutlined } from '@ant-design/icons'
+import { api } from '~/trpc/react'
 
 interface LogoProps {
   height?: number
@@ -21,11 +22,13 @@ const Logo: React.FC<LogoProps> = ({ height = 40 }) => (
 
 export default function Component() {
   const [isLoading, setIsLoading] = useState<boolean>(false)
+  const [callbackUrl, setCallbackUrl] = useState<string | null>(null)
+  const profileExists = api.profile.exists.useQuery()
 
   const handleSignIn = async (): Promise<void> => {
     setIsLoading(true)
     try {
-      const result = await signIn('google', { callbackUrl: '/profile-setup' })
+      const result = await signIn('google', { callbackUrl: '/home' })
       if (result?.error) {
         console.error('Sign-in error:', result.error)
       }

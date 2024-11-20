@@ -182,27 +182,32 @@ export default function ProfilePage() {
       <ScrollArea className="h-[calc(100vh-4rem)]">
         <div className="max-w-4xl mx-auto p-4 space-y-6">
           {/* Profile Header */}
-          <div className="relative w-full h-48 rounded-xl bg-gradient-to-r from-red-600 to-purple-600">
-            <div className="absolute -bottom-16 left-8 flex items-end space-x-4">
-              <Avatar className="h-32 w-32 border-4 border-black">
-                <AvatarImage src={session?.user?.image ?? undefined} />
-                <AvatarFallback>{session?.user?.name?.[0] ?? 'U'}</AvatarFallback>
-              </Avatar>
-              <div className="mb-4">
-                <h1 className="text-3xl font-bold">{profile?.displayName}</h1>
-                <p className="text-slate-300">{profile?.university}</p>
-              </div>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              className="absolute bottom-4 right-4"
-              onClick={() => setIsEditing(!isEditing)}
-            >
-              <PenSquare className="h-4 w-4 mr-2" />
-              {isEditing ? 'Cancel' : 'Edit Profile'}
-            </Button>
-          </div>
+          <div className="relative w-full rounded-xl">
+  
+  <div className="w-full h-48 rounded-xl bg-gradient-to-r from-red-900 to-red-600">
+
+    <div className="absolute bottom-4 left-8 right-8 flex items-end justify-between">
+      <div className="flex items-end space-x-4">
+        <Avatar className="h-28 w-28 border-4 border-red-500">
+          <AvatarImage src={session?.user?.image ?? undefined} />
+          <AvatarFallback>{session?.user?.name?.[0] ?? 'U'}</AvatarFallback>
+        </Avatar>
+        <div>
+          <h1 className="text-3xl font-bold">{profile?.displayName}</h1>
+          <p className="text-slate-300">{profile?.university}</p>
+        </div>
+      </div>
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => setIsEditing(!isEditing)}
+      >
+        <PenSquare className="h-4 w-4 mr-2" />
+        {isEditing ? 'Cancel' : 'Edit Profile'}
+      </Button>
+    </div>
+  </div>
+</div>
 
           <div className="mt-20">
             {isEditing ? (

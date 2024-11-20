@@ -1,7 +1,9 @@
 import { Card } from '../../components/ui/card'
 import { Button } from '../../components/ui/button'
+import { useRouter } from 'next/navigation'
 
 export default function Widgets() {
+  const router = useRouter()
   const trendingTopics = ['#UniversityLife', '#StudyTips', '#CampusEvents']
   const upcomingEvents = [
     { name: 'Career Fair', date: 'Next Week' },
@@ -36,7 +38,7 @@ export default function Widgets() {
 
       <Card className="p-4 bg-slate-900 border border-slate-800 shadow-lg">
         <h2 className="font-semibold mb-3 text-lg text-white">Find Friends</h2>
-        <Button className="w-full bg-red-600 hover:bg-red-700 text-white transition-colors duration-200">
+        <Button onClick={()=> router.push("/swipe")} className="w-full bg-red-600 hover:bg-red-700 text-white transition-colors duration-200">
           Connect with Classmates
         </Button>
       </Card>

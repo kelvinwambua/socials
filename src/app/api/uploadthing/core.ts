@@ -30,7 +30,7 @@ export const ourFileRouter = {
     }),
    
   videoUploader: f({
-     video :{maxFileSize:"4MB"} // Excel .xlsx files
+     video :{maxFileSize:"16MB"} // Excel .xlsx files
   })
     // Set permissions and file types for this FileRoute
     .middleware(async () => {

@@ -1,11 +1,16 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState,useEffect } from 'react'
 
 import Link from 'next/link'
 import Image from 'next/image'
 import { ArrowRightOutlined, CloseOutlined, MenuOutlined, LinkedinFilled, TwitterCircleFilled } from '@ant-design/icons'
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar'
+//push to home if logged in
+import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
+
+
 
 const Logo: React.FC<{ _isLabel?: boolean; height?: number }> = ({ _isLabel, height = 40 }) => (
   <div style={{ height }}>
@@ -368,6 +373,14 @@ export default function LandingPage() {
     { link: '#testimonials', title: 'Testimonials' },
     { link: '#pricing', title: 'Pricing' },
   ]
+  const { data: session } = useSession();
+const router = useRouter();
+
+useEffect(() => {
+  if (session) {
+    router.push('/home')
+  }
+}, [session])
 
   const features: Feature[] = [
     {
@@ -402,7 +415,7 @@ export default function LandingPage() {
     },
     {
       name: 'Lyon A.',
-      content: "Since downloading sonder I have been able to make many new friends!😊",
+      content: "Before getting this app I only had one girlfriend,n",
       designation: 'BICS Year 1',
       avatar: '/Lyon.jpg',
     },

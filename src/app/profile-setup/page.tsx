@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ArrowRightIcon } from '@radix-ui/react-icons'
 import { Input } from "../../components/ui/input"
@@ -33,6 +33,12 @@ const interestOptions = [
 ]
 
 export default function ProfileSetup() {
+  const profileExists = api.profile.exists.useQuery()
+  useEffect(() => {
+    if (profileExists.data?.exists === true) {
+      router.push('/home')
+    }
+  }, [profileExists.data])
   const router = useRouter()
   const { toast } = useToast() 
   const [formData, setFormData] = useState({

@@ -12,9 +12,31 @@ import {
 } from "../../components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "../../components/ui/avatar"
 import { useState } from 'react'
+import { useSession } from 'next-auth/react'
+import {signOut} from 'next-auth/react'
+import { api } from '~/trpc/react'
+import { useRouter } from 'next/navigation'
+
+
 
 export default function Header() {
+  const {data:session} = useSession()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const router = useRouter()
+  
+  
+  const handleSignOut = async (): Promise<void> => {
+    setIsLoading(true)
+    try {
+      const result = await signOut( { callbackUrl: '/' })
+   
+    } catch (error) {
+      console.error('Sign-in error:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
   
   return (
     <header className="sticky top-0 z-50 bg-black border-b border-slate-800 shadow-sm">
@@ -42,27 +64,27 @@ export default function Header() {
             <Button variant="ghost" size="icon" className="text-slate-400 hover:text-white hover:bg-slate-800 transition-all duration-200">
               <Bell size={20} />
             </Button>
-            <Button variant="ghost" size="icon" className="text-slate-400 hover:text-white hover:bg-slate-800 transition-all duration-200">
+            <Button variant="ghost" onClick={()=> router.push("chat")} size="icon" className="text-slate-400 hover:text-white hover:bg-slate-800 transition-all duration-200">
               <MessageCircleMore size={20} />
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                   <Avatar className="h-8 w-8">
-                    <AvatarImage src="/api/placeholder/32/32" alt="@user" />
-                    <AvatarFallback>U</AvatarFallback>
+                    <AvatarImage src={session?.user.image ?? ""} alt="@user" />
+                    <AvatarFallback>{session?.user.name?.charAt(0)}</AvatarFallback>
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-56 bg-slate-900 border-slate-800" align="end" forceMount>
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none text-white">User</p>
-                    <p className="text-xs leading-none text-slate-400">user@example.com</p>
+                    <p className="text-sm font-medium leading-none text-white">{session?.user.name}</p>
+                    <p className="text-xs leading-none text-slate-400">{session?.user.email}</p>
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator className="bg-slate-800" />
-                <DropdownMenuItem className="text-slate-400 focus:text-white focus:bg-slate-800">
+                <DropdownMenuItem onClick={()=> router.push("profile")} className="text-slate-400 focus:text-white focus:bg-slate-800">
                   Profile
                 </DropdownMenuItem>
                 <DropdownMenuItem className="text-slate-400 focus:text-white focus:bg-slate-800">
@@ -75,7 +97,7 @@ export default function Header() {
                   Subscription
                 </DropdownMenuItem>
                 <DropdownMenuSeparator className="bg-slate-800" />
-                <DropdownMenuItem className="text-slate-400 focus:text-white focus:bg-slate-800">
+                <DropdownMenuItem onClick={handleSignOut} className="text-slate-400 focus:text-white focus:bg-slate-800">
                   Log out
                 </DropdownMenuItem>
               </DropdownMenuContent>

@@ -1,4 +1,4 @@
-import { and, eq, inArray, not, or, sql } from "drizzle-orm";
+import { and, eq, exists, inArray, not, or, sql } from "drizzle-orm";
 import { createTRPCRouter, protectedProcedure, publicProcedure } from '../trpc';
 import { profiles, approvedSchools, schoolApplications, friendRequests, swipes, users } from '~/server/db/schema';
 import { z } from 'zod';
@@ -6,6 +6,18 @@ import { TRPCError } from '@trpc/server';
 import { Filter } from 'bad-words';  
 
 export const profileRouter = createTRPCRouter({
+  exists: protectedProcedure.query(async ({ ctx }) => {
+    const profile = await ctx.db.query.profiles.findFirst({
+      where: eq(profiles.userId, ctx.session.user.id),
+
+    });
+    console.log(profile);
+    if (!profile) {
+      return { exists: false };
+    }
+
+    return { exists: true };
+  }),
   setup: protectedProcedure
     .input(z.object({
       displayName: z.string().min(1).max(50),

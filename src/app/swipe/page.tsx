@@ -131,8 +131,9 @@ function SwipeInterface() {
                 Find More Users
               </Button>
               <Button
+
                 onClick={() => router.push('/home')}
-                className="bg-red-600 text-white hover:bg-red-700 transition-colors"
+                className="bg-red-600 text-white hover:bg-red-700 transition-colors mt-4"
               >
                 <Home size={20} className="mr-2" />
                 Got to home

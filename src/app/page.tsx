@@ -403,7 +403,7 @@ useEffect(() => {
   const testimonials: Testimonial[] = [
     {
       name: 'Keane M.',
-      content: "If it were not for this app, I would be single🤷‍♂️",
+      content: "Maybe Campus was the friends we made along the way",
       designation: 'BBIT Year 4',
       avatar: '/Keane.jpg',
     },
@@ -415,7 +415,7 @@ useEffect(() => {
     },
     {
       name: 'Lyon A.',
-      content: "Before getting this app I only had one girlfriend,n",
+      content: "I found my study buddies",
       designation: 'BICS Year 1',
       avatar: '/Lyon.jpg',
     },
